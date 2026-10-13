@@ -99,7 +99,7 @@ export const PublicTicketPage: React.FC<PublicTicketPageProps> = ({ token, onBac
           </div>
 
           <h1 className="text-xl font-black text-white tracking-tight leading-tight">
-            {event?.title || 'RHB Events Pass'}
+            {event?.title || 'Jomora Pass'}
           </h1>
           <p className="text-xs text-slate-300 mt-1">
             {event?.venue_name || event?.city || 'Auditorium'}
@@ -160,7 +160,7 @@ export const PublicTicketPage: React.FC<PublicTicketPageProps> = ({ token, onBac
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" /> Cryptographically Verified Token
           </span>
-          <span>RHB Events</span>
+          <span>Jomora</span>
         </div>
       </div>
     </div>

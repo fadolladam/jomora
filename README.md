@@ -1,9 +1,11 @@
-# RHB Events
+# Jomora
 
-**Multi-event registration, FIFO waitlist queue, QR ticketing & on-site check-in — for internal RHB staff events.**
+> *Let’s make events happen.*
+
+**Multi-event registration, FIFO waitlist queue, QR ticketing & on-site check-in — modern event management platform.**
 
 One Laravel application. It serves a JSON API **and** a compiled React single-page
-app from the same origin. Staff browse a public catalogue, register through a
+app from the same origin. Users browse a public catalogue, register through a
 dynamic form, get a QR ticket, and are checked in on-site with a phone camera.
 Admins run the whole lifecycle — create events, build registration forms, manage
 a capacity-safe waiting list, and pull analytics.

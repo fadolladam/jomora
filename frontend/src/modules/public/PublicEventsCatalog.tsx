@@ -301,7 +301,7 @@ export const PublicEventsCatalog: React.FC<PublicEventsCatalogProps> = ({
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-400">
-        <p>RHB Bank — Internal Events Platform · For authorised staff use only.</p>
+        <p>Jomora — Let’s make events happen.</p>
       </footer>
     </div>
   );

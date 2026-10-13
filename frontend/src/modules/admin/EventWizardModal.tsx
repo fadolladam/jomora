@@ -494,7 +494,7 @@ export const EventWizardModal: React.FC<EventWizardModalProps> = ({
                   value={coverImageUrl}
                   onChange={setCoverImageUrl}
                   folder="event-covers"
-                  helpText="Shown on the event card and detail page. Leave blank to use an auto-generated RHB placeholder."
+                  helpText="Shown on the event card and detail page. Leave blank to use an auto-generated Jomora placeholder."
                 />
               </div>
 

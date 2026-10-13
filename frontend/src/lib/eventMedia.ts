@@ -31,7 +31,7 @@ export function placeholderCover(event: EventItem): string {
   <circle cx="670" cy="360" r="220" fill="${accent}" fill-opacity="0.14"/>
   <circle cx="110" cy="70" r="140" fill="#ffffff" fill-opacity="0.06"/>
   <text x="50" y="250" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="120" font-weight="800" fill="#ffffff" letter-spacing="4">${label}</text>
-  <text x="52" y="310" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="26" font-weight="600" fill="#ffffff" fill-opacity="0.7">RHB EVENTS</text>
+  <text x="52" y="310" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="26" font-weight="600" fill="#ffffff" fill-opacity="0.7">JOMORA</text>
 </svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }

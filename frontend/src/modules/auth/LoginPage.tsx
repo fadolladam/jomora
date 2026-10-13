@@ -42,7 +42,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onCancel }
       <div className="w-full max-w-md bg-slate-900/80 border border-white/10 rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
         <div className="mb-8 flex flex-col items-center gap-3">
           <BrandMark theme="dark" size="lg" />
-          <p className="text-sm text-slate-400">Sign in to the internal events console</p>
+          <p className="text-sm text-slate-400">Sign in to the Jomora events console</p>
         </div>
 
         {error && (

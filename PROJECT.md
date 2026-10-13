@@ -1,9 +1,8 @@
-# RHB Events — Comprehensive Project Documentation
+# Jomora — Comprehensive Project Documentation
 
-_Generated 2026-09-09 · branch `security/admin-rbac-and-branding`_
+> *Let’s make events happen.*
 
-Multi-event registration platform for internal RHB staff events: a public event
-catalogue, a dynamic per-event registration form, a concurrency-safe seat/waitlist
+Multi-event registration platform: a public event catalogue, a dynamic per-event registration form, a concurrency-safe seat/waitlist
 engine, QR tickets, on-site QR check-in, and admin command-centre dashboards with
 CSV/PDF exports and an immutable audit trail.
 

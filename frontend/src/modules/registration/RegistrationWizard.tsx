@@ -387,7 +387,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({
                   className="mt-1 text-indigo-600 rounded focus:ring-indigo-500"
                 />
                 <span className="text-xs text-slate-700 leading-relaxed">
-                  I agree to the event guidelines, registration terms, and allow RHB Bank to process my information for attendance and ticketing purposes.
+                  I agree to the event guidelines, registration terms, and allow Jomora to process my information for attendance and ticketing purposes.
                 </span>
               </label>
             </div>
