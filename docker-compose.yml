@@ -1,77 +1,120 @@
-name: events
+name: jomora
 
-# Copy `.env.docker.example` to `.env` and fill it in before a real deployment.
-# APP_KEY has no default here on purpose — set it or the stack refuses to start.
-#   docker compose run --rm events-backend php artisan key:generate --show
-
+# Every service is gated behind this profile so a plain `docker compose up`
+# cannot accidentally create a new database. The database volume is new and
+# must only be initialized after the owner approves it.
 services:
-  # Database Service (MySQL 8.0)
-  events-db:
+  database:
+    profiles: [local-db]
     image: mysql:8.0
-    container_name: events-db
+    container_name: jomora-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-events}
-      MYSQL_USER: ${DB_USERNAME:-events_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-events_secret}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-jomora_dev}
+      MYSQL_USER: ${DB_USERNAME:-jomora_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-local-change-me}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-local-root-change-me}
     ports:
-      # Bound to loopback only — MySQL is not reachable from outside this host.
-      - "127.0.0.1:${DB_PORT:-3306}:3306"
+      - "127.0.0.1:${DB_PORT:-20000}:3306"
     volumes:
-      - events_db_data:/var/lib/mysql
+      - jomora_mysql_data:/var/lib/mysql
     networks:
-      - events-network
+      - jomora-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 20s
 
-  # Application (Laravel API + the pre-built React SPA, served together)
-  events-backend:
+  backend:
+    profiles: [local-db]
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: events-backend
+    container_name: jomora-backend
     restart: unless-stopped
     depends_on:
-      events-db:
+      database:
         condition: service_healthy
     environment:
-      APP_NAME: "RHB Events"
-      APP_ENV: production
-      APP_DEBUG: "false"
-      APP_URL: ${APP_URL:-http://localhost:5173}
-      APP_KEY: "${APP_KEY:?APP_KEY is required - see .env.docker.example}"
+      APP_NAME: Jomora
+      APP_ENV: local
+      APP_KEY: ${APP_KEY:-}
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
       DB_CONNECTION: mysql
-      DB_HOST: events-db
+      DB_HOST: database
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-events}
-      DB_USERNAME: ${DB_USERNAME:-events_user}
-      DB_PASSWORD: ${DB_PASSWORD:-events_secret}
-      # First-party SPA cookie auth. Set these to your real host(s) in prod.
-      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:5173,127.0.0.1:5173,localhost,127.0.0.1}
-      SESSION_DRIVER: database
-      # Set SESSION_SECURE_COOKIE=true (and serve over HTTPS) in production.
-      SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-false}
+      DB_DATABASE: ${DB_DATABASE:-jomora_dev}
+      DB_USERNAME: ${DB_USERNAME:-jomora_app}
+      DB_PASSWORD: ${DB_PASSWORD:-local-change-me}
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: 480
+      SESSION_DOMAIN: null
+      SESSION_SECURE_COOKIE: "false"
       SESSION_SAME_SITE: lax
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SANCTUM_STATEFUL_DOMAINS: localhost:10001,127.0.0.1:10001
+      CORS_ALLOWED_ORIGINS: http://localhost:10001
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      FILESYSTEM_DISK: public
+      LOG_CHANNEL: stack
+      LOG_LEVEL: debug
     ports:
-      # Whole app (SPA + API) on http://localhost:5173
-      - "5173:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
-      # Persist device-uploaded images across container rebuilds
-      - events_backend_uploads:/var/www/html/storage/app/public
+      - ./backend:/var/www/html
+      - jomora_backend_vendor:/var/www/html/vendor
+      - jomora_backend_storage:/var/www/html/storage
+      - jomora_backend_cache:/var/www/html/bootstrap/cache
     networks:
-      - events-network
+      - jomora-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  frontend:
+    profiles: [local-db]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jomora-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "127.0.0.1:10001:5173"
+    volumes:
+      - ./frontend:/app
+      - jomora_frontend_node_modules:/app/node_modules
+    networks:
+      - jomora-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
 
 volumes:
-  events_db_data:
-    name: events_db_data
-  events_backend_uploads:
-    name: events_backend_uploads
+  jomora_mysql_data:
+    name: jomora_mysql_data
+  jomora_backend_vendor:
+    name: jomora_backend_vendor
+  jomora_backend_storage:
+    name: jomora_backend_storage
+  jomora_backend_cache:
+    name: jomora_backend_cache
+  jomora_frontend_node_modules:
+    name: jomora_frontend_node_modules
 
 networks:
-  events-network:
-    name: events-network
+  jomora-network:
+    name: jomora-network

@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET ?? 'http://127.0.0.1:8000'
+
 // https://vite.dev/config/
 export default defineConfig({
   // The built SPA is served at the web root by Laravel
@@ -26,8 +28,8 @@ export default defineConfig({
     proxy: {
       // Keep API + Sanctum's CSRF-cookie route on the same origin as the SPA
       // so session-cookie auth works through the dev server.
-      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true, secure: false },
-      '/sanctum': { target: 'http://127.0.0.1:8000', changeOrigin: true, secure: false },
+      '/api': { target: apiProxyTarget, changeOrigin: true, secure: false },
+      '/sanctum': { target: apiProxyTarget, changeOrigin: true, secure: false },
     },
   },
 })

@@ -47,33 +47,48 @@ for the full specification.
 
 ## Run it
 
-### Option A — Docker (fastest)
+### Option A — Docker development
+
+The Compose setup runs a Laravel backend, a Vite frontend with hot reload, and
+an isolated MySQL 8 database on the dedicated `jomora_mysql_data` volume. This
+local database was initialized empty; its schema is now installed, with no seed
+data. Starting the `local-db` profile creates a fresh database volume on first
+use, so only do that when you intend to create a new Jomora database. Docker
+does not run migrations or seeds automatically.
+
+For a new local installation, prepare local-only settings and build the app images:
 
 ```bash
-cp .env.docker.example .env
-docker compose run --rm events-backend php artisan key:generate --show   # paste APP_KEY into .env
-docker compose up -d --build
-docker compose exec events-backend php artisan migrate --seed            # local demo data
+cp -n .env.docker.example .env
+# Replace DB_PASSWORD and DB_ROOT_PASSWORD in .env with local values.
+docker compose --profile local-db build
+# Only run this if APP_KEY is still empty, then paste its output into .env.
+docker compose --profile local-db run --rm --no-deps backend php artisan key:generate --show
+# Paste the generated value into APP_KEY in .env, then start:
+docker compose --profile local-db up -d
+# On a confirmed empty Jomora database only, install the schema (no seed data):
+docker compose --profile local-db exec backend php artisan migrate --force
 ```
-
-Open **http://localhost:5173**.
 
 | Service | URL | Notes |
 |---|---|---|
-| `events-backend` | http://localhost:5173 | Laravel API **+ the built React SPA** |
-| `events-db` | `127.0.0.1:3306` | MySQL 8 (loopback only), volume `events_db_data` |
+| Frontend | http://localhost:5173 | Vite development server; proxies `/api` and `/sanctum` to the backend container. |
+| Backend | http://localhost:8000 | Laravel API and the committed SPA build. Health endpoint: `/up`. |
+| MySQL | `127.0.0.1:3308` | MySQL 8, loopback only; dedicated volume `jomora_mysql_data`. App connects over the private Compose network. |
+
+Useful commands from the repository root:
 
 ```bash
-docker compose logs -f     # tail logs
-docker compose down         # stop
+docker compose --profile local-db logs -f
+docker compose --profile local-db logs -f backend frontend database
+docker compose --profile local-db stop
+docker compose --profile local-db start
 ```
 
-> `APP_KEY` has no default — the stack won't start without it. `migrate --seed`
-> is refused when `APP_ENV=production` (the demo accounts use `password123`).
-> Production: see [`DEPLOYMENT.md`](DEPLOYMENT.md).
-
-> After a **frontend** change: `cd frontend && npm run build` (outputs into
-> `backend/public/`), then `docker compose up -d --build`.
+`docker compose --profile local-db stop` stops these services while keeping the
+database volume. Do not use `down -v`. Before applying migrations to an existing
+database, review their status and effects; do not seed a database containing
+existing data. Production: see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ### Option B — XAMPP / any plain PHP + MySQL host
 
